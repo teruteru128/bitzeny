@@ -20,6 +20,7 @@ env:
     - SDK_URL=https://bitcoincore.org/depends-sources/sdks
     - PYTHON_DEBUG=1
     - WINEDEBUG=fixme-all
+    - secure: p+61bzyTgt7mRyX7S1+k4Bx1baYd7GDEMgr+h5rNLzMaQTaNr+nD89vKg45ua1dBbqUrQvPpUrU9Rk+EpshhlUNOXpMN6MR9spIXzxUKsCZ5/qaIglK2hviS5/2mvT5Rh5Ug4WgfpdDD3rr8Sie0/BR83B4xMgCb5ReQmLMn5EyIzFi2QnlRyFzUtgFUCXblwh194Z9lPNQJ9LMpZOl7RAbA+Inbz1+ywpPP12My9EOjRQOrpmTqpLxdvr2+1f1ZZazVO08Hv8aoXWHcSXmoFgie5sWDHvpQrf85L40qVwq5HRgh7KmTnP7bxdW1fseQPr/ojrd9jxdvuKpXBHV7w+ni3u4ENcYUvUoxkMwTNBnPWhX03g7wl0ts5oz50TJm8z6ZxmNoNmvbqDJa+E1Vyo0i/6esyM3SVPVgS24BadjnbOcuTU7U01kw7VgCeVArREqKjfiUo21+PbNXGB4PJ35xeXHoZIvgOeJZvSfVWBqHYM3t2GLHYwMiWpTKyGhZJqlEPjqGUj0mvI7p0xM2GREi+zRRkCvE0277JQTbXj15nvkR4ccnn8eO1Zp6Lo/g9kkErbu4mhm5VSnR8cmIQEKR8XVLV5YBQvTEn53JlfVVPsDcyGHRrrNZK12ZjMFoSsodtye1qjRMDZwKiRwhwoqfze2ZDWBYPr2Ut6D8VdY=
   matrix:
 # ARM
     - HOST=arm-linux-gnueabihf PACKAGES="g++-arm-linux-gnueabihf" DEP_OPTS="NO_QT=1" CHECK_DOC=1 GOAL="install" BITCOIN_CONFIG="--enable-glibc-back-compat --enable-reduce-exports"
@@ -74,3 +75,6 @@ script:
 after_script:
     - echo $TRAVIS_COMMIT_RANGE
     - echo $TRAVIS_COMMIT_LOG
+    - AUTHOR=`git log -1 | grep 'Author:' | awk '{$1="";$NF="";print $0}' | sed -e 's/^[ ]*//g'`
+    - if [ $TRAVIS_TEST_RESULT ]; then RESULT='succeeded';COLOR=2932302 else RESULT='failed';COLOR=13313073 fi
+    - echo '{"embeds":[{"title":"['$TRAVIS_JOB_NUMBER':'$HOST'] Build '$TRAVIS_BUILD_NUMBER' '$RESULT'","type":"rich","description":"[`'${TRAVIS_COMMIT:0:7}'`](https://github.com/'$TRAVIS_REPO_SLUG'/commit/'$TRAVIS_COMMIT') '$TRAVIS_COMMIT_MESSAGE' - '$AUTHOR'","url":"https://travis-ci.org/'$TRAVIS_REPO_SLUG'/builds/'$TRAVIS_BUILD_ID'","timestamp":"'`date --utc +%FT%TZ`'","color":'$COLOR',"footer":{"text":"Travis CI"}}]}' | sed -e 's/\\"/"/g' | curl -A 'Travis CI' -H 'Content-Type:application/json' -d @- $DISCORD_WEBHOOK_URL #TODO: need to be fixed
